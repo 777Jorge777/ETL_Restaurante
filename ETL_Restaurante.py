@@ -5,12 +5,30 @@ try:
     data = pd.read_csv('archivo.csv', nrows=3461)
 
     # Verifica la existencia de las columnas necesarias
-    required_columns = ['Location', 'Price', 'Cuisine', 'Award', 'FacilitiesAndServices']
+    required_columns = ['Location', 'Price', 'Cuisine', 'Longitude', 'Latitude', 'Award', 'FacilitiesAndServices']
     missing_columns = [col for col in required_columns if col not in data.columns]
 
     if not missing_columns:
         # Selecciona solo las columnas necesarias
         selected_data = data[required_columns]
+        
+        
+        
+        # Modifica los valores de la columna 'Price'
+        price_mapping = {'$': 'Muy Barato', '$$': 'Accesible', '$$$': 'Normal', '$$$$': 'Costoso', '$$$$$': 'Muy costoso'}
+        selected_data['Price'] = selected_data['Price'].replace(price_mapping)
+        
+        price_mapping = {'¥': 'Muy Barato', '¥¥': 'Accesible', '¥¥¥': 'Normal', '¥¥¥¥': 'Costoso', '¥¥¥¥¥': 'Muy costoso'}
+        selected_data['Price'] = selected_data['Price'].replace(price_mapping)
+        
+        price_mapping = {'€': 'Muy Barato', '€€': 'Accesible', '€€€': 'Normal', '€€€€': 'Costoso', '€€€€€': 'Muy costoso'}
+        selected_data['Price'] = selected_data['Price'].replace(price_mapping)
+        
+        price_mapping = {'£': 'Muy Barato', '££': 'Accesible', '£££': 'Normal', '££££': 'Costoso', '£££££': 'Muy costoso'}
+        selected_data['Price'] = selected_data['Price'].replace(price_mapping)
+
+        
+        
 
         # Crea la nueva columna 'Pais' y elimina la información de 'Location'
         selected_data.insert(0, 'Pais', selected_data['Location'].str.split(',').str[1].str.strip())
@@ -19,9 +37,13 @@ try:
         # Crea las nuevas columnas 'Cuise1' y 'Cuise2' y elimina la información de 'Cuisine'
         selected_data.insert(3, 'Cuise1', selected_data['Cuisine'].str.split(',').str[0].str.strip())
         selected_data.insert(4, 'Cuise2', selected_data['Cuisine'].str.split(',').str[1].str.strip())
-
+        
         # Elimina la columna 'Cuisine'
         selected_data.drop('Cuisine', axis=1, inplace=True)
+        
+        # Convierte las columnas 'Longitude' y 'Latitude' a tipo numérico
+        selected_data['Longitude'] = pd.to_numeric(selected_data['Longitude'], errors='coerce')
+        selected_data['Latitude'] = pd.to_numeric(selected_data['Latitude'], errors='coerce')
 
         # Divide la columna 'FacilitiesAndServices' en cinco nuevas columnas
         facilities_columns = selected_data['FacilitiesAndServices'].str.split(',', expand=True)
